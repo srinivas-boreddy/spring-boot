@@ -60,8 +60,7 @@ stages:
               kubernetesServiceConnection: $(k8sconnection)
               action: deploy
               namespace: $(namespace)
-              manifests: |
-                **/deployment-azure.yaml
+              manifests: '**/deployment-azure.yaml'
               imagePullSecrets: |
                 $(imagePullSecret)
               arguments: '-n=bermtecpayment'
@@ -82,8 +81,7 @@ stages:
               kubernetesServiceConnection: $(k8sconnection)
               action: promote
               namespace: $(namespace)
-              manifests: |
-                    **/deployment-azure.yaml
+              manifests: '**/deployment-azure.yaml'
               imagePullSecrets: |
                 $(imagePullSecret)
               arguments: '-n=bermtecpayment'
