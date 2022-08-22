@@ -34,6 +34,11 @@ stages:
             latest
             1.0.$(Build.BuildId)
 
+      - task: PublishPipelineArtifact@1
+        inputs:
+          artifactName: 'manifests'
+          path: 'manifests'
+
 - stage: 'Deploy'
   displayName: 'Deployment to Test'
   jobs:
@@ -44,6 +49,11 @@ stages:
       runOnce:
         deploy:
           steps:
+           - task: DownloadPipelineArtifact@2
+             displayName: 'Download Manifests'
+             inputs:
+                artifactName: 'manifests'
+                downloadPath: '$(System.ArtifactsDirectory)/manifests'
 
            - task: KubernetesManifest@0
              displayName: Create imagePullSecret
@@ -60,7 +70,9 @@ stages:
               kubernetesServiceConnection: $(k8sconnection)
               action: deploy
               namespace: $(namespace)
-              manifests: '**/deployment-azure.yaml'
+              manifests: |
+                  $(System.ArtifactsDirectory)/manifests/deployment.yaml
+                  $(System.ArtifactsDirectory)/manifests/service.yaml
               imagePullSecrets: |
                 $(imagePullSecret)
               arguments: '-n=bermtecpayment'
@@ -74,15 +86,23 @@ stages:
     strategy:
       runOnce:
         deploy:
-          steps:       
-           - task: KubernetesManifest@0
-             displayName: Promote
-             inputs:
-              kubernetesServiceConnection: $(k8sconnection)
-              action: promote
-              namespace: $(namespace)
-              manifests: '**/deployment-azure.yaml'
-              imagePullSecrets: |
-                $(imagePullSecret)
-              arguments: '-n=bermtecpayment'
+          steps:
+            - task: DownloadPipelineArtifact@2
+              displayName: 'Download Manifests'
+              inputs:
+                artifactName: 'manifests'
+                downloadPath: '$(System.ArtifactsDirectory)/manifests'
+
+            - task: KubernetesManifest@0
+              displayName: Promote
+              inputs:
+                kubernetesServiceConnection: $(k8sconnection)
+                action: promote
+                namespace: $(namespace)
+                manifests: |
+                    $(System.ArtifactsDirectory)/manifests/deployment.yaml
+                    $(System.ArtifactsDirectory)/manifests/service.yaml
+                imagePullSecrets: |
+                  $(imagePullSecret)
+                arguments: '-n=bermtecpayment'
   
