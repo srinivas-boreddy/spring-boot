@@ -66,7 +66,7 @@ stages:
                 $(imagePullSecret)
               arguments: '-n=bermtecpayment'
 
-- stage: 'Deploy to UAT'
+- stage: 'Deploy_to_UAT'
   displayName: 'Deployment to UAT'
   jobs:
   - deployment: Deploy
