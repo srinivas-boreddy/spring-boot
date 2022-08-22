@@ -1,0 +1,90 @@
+# ASP.NET Core
+# Build and test ASP.NET Core projects targeting .NET Core.
+# Add steps that run tests, create a NuGet package, deploy, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
+
+trigger:
+- develop
+- feature/*
+- master
+
+pool:
+   vmImage: 'ubuntu-latest'
+
+variables:
+  repository: 'bermtecpayment'
+  namespace: 'bermtecpayment'
+  k8sconnection: 'k8sbermtec'
+  imagePullSecret: 'test'
+  containerRegistry: 'bermtecshared'
+  isMain: $[eq(variables['Build.SourceBranch'], 'refs/heads/master')]
+
+stages:
+- stage: 'Build'
+  jobs:
+  - job: 'Build'
+    steps:
+      - task: Docker@2
+        inputs:
+          containerRegistry: $(containerRegistry)
+          repository: '$(repository)'
+          command: 'buildAndPush'
+          Dockerfile: '**/Dockerfile'
+          tags: |
+            latest
+            1.0.$(Build.BuildId)
+
+- stage: 'Deploy'
+  displayName: 'Deployment to Test'
+  jobs:
+  - deployment: Deploy
+    displayName: Deploy to AKS  
+    environment: 'Test'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+
+           - task: KubernetesManifest@0
+             displayName: Create imagePullSecret
+             inputs:
+                kubernetesServiceConnection: $(k8sconnection)
+                action: createSecret
+                secretName: $(imagePullSecret)
+                namespace: $(namespace)
+                dockerRegistryEndpoint: $(containerRegistry)
+              
+           - task: KubernetesManifest@0
+             displayName: Deploy
+             inputs:
+              kubernetesServiceConnection: $(k8sconnection)
+              action: deploy
+              namespace: $(namespace)
+              manifests: |
+                **/deployment-azure.yaml
+              imagePullSecrets: |
+                $(imagePullSecret)
+              arguments: '-n=bermtecpayment'
+
+- stage: 'Deploy to UAT'
+  displayName: 'Deployment to UAT'
+  jobs:
+  - deployment: Deploy
+    displayName: Deploy to AKS  
+    environment: 'UAT'
+    strategy:
+      runOnce:
+        deploy:
+          steps:       
+           - task: KubernetesManifest@0
+             displayName: Promote
+             inputs:
+              kubernetesServiceConnection: $(k8sconnection)
+              action: promote
+              namespace: $(namespace)
+              manifests: |
+                    **/deployment-azure.yaml
+              imagePullSecrets: |
+                $(imagePullSecret)
+              arguments: '-n=bermtecpayment'
+  
