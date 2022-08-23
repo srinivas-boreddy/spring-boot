@@ -94,10 +94,10 @@ stages:
                 downloadPath: '$(System.ArtifactsDirectory)/manifests'
 
             - task: KubernetesManifest@0
-              displayName: Promote
+              displayName: Deploy to UAT
               inputs:
                 kubernetesServiceConnection: $(k8sconnection)
-                action: promote
+                action: deploy
                 namespace: $(namespace)
                 manifests: |
                     $(System.ArtifactsDirectory)/manifests/deployment.yaml
