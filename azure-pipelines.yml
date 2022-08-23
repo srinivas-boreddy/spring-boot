@@ -12,10 +12,10 @@ pool:
    vmImage: 'ubuntu-latest'
 
 variables:
-  repository: 'bermtecpayment'
+  repository: 'bermtecuser'
   namespace: 'bermtecpayment'
   k8sconnection: 'k8sbermtec'
-  imagePullSecret: 'test'
+  imagePullSecret: 'imagepullsecret'
   containerRegistry: 'bermtecshared'
   isMain: $[eq(variables['Build.SourceBranch'], 'refs/heads/master')]
 
