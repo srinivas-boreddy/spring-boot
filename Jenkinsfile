@@ -24,6 +24,11 @@ pipeline {
                 echo 'Deploy to QA'
             }
         }
+        stage('Artifacts') {
+            steps {
+                echo 'Artifacts'
+            }
+        }
          stage('Deploy to Prod') {
             steps {
                 echo 'Deploy to Prod'
