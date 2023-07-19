@@ -16,11 +16,7 @@ pipeline {
                 echo 'SonarQube'
             }
         }
-        stage('Push to artifactory') {
-            steps {
-                echo 'artifactory'
-            }
-        }
+    
         stage('Deploy to QA') {
             steps {
                 echo 'Deploy to QA'
