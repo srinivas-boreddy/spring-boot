@@ -45,8 +45,5 @@ pipeline {
         aborted {
             echo ('aborted')
         }
-        unstable {
-            echo ('Unstable')
-        }
     }
 }
